@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고양이 콤보 게임</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #fff1f5, #f3f0ff);
+        color: #333;
+    }
+
+    .game {
+        text-align: center;
+        width: 90%;
+        max-width: 420px;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 10px 35px #00000012;
+    }
+
+    h1 { margin-bottom: 8px; }
+
+    .subtitle { color: #888; }
+
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        margin: 25px 0;
+    }
+
+    .stat {
+        background: #fff0f5;
+        border-radius: 14px;
+        padding: 12px 20px;
+        min-width: 120px;
+    }
+
+    .number {
+        font-size: 30px;
+        font-weight: bold;
+        color: #ed6794;
+        margin-top: 5px;
+    }
+
+    #cat {
+        display: inline-block;
+        font-size: 125px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    #cat:active { transform: scale(0.85) rotate(-8deg); }
+
+    .shake { animation: bounce 0.22s; }
+
+    @keyframes bounce {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2) rotate(8deg); }
+        100% { transform: scale(1); }
+    }
+
+    #message {
+        height: 28px;
+        color: #ed6794;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    button {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 22px;
+        background: #ed6794;
+        color: white;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    button:hover { background: #db4d7d; }
+
+    .hint {
+        color: #999;
+        font-size: 13px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+
+<body>
+<div class="game">
+    <h1>🐱 고양이 콤보!</h1>
+    <div class="subtitle">고양이를 빠르게 클릭해 봐!</div>
+
+    <div class="stats">
+        <div class="stat">
+            <div>🔥 COMBO</div>
+            <div class="number" id="combo">0</div>
+        </div>
+        <div class="stat">
+            <div>⭐ 최고 기록</div>
+            <div class="number" id="best">0</div>
+        </div>
+    </div>
+
+    <div id="cat" role="button" tabindex="0"
+         aria-label="고양이 클릭하기">🐱</div>
+
+    <div id="message">고양이를 클릭해!</div>
+    <p>점수: <strong id="score">0</strong></p>
+
+    <button id="reset">다시 시작</button>
+
+    <div class="hint">3초 동안 클릭하지 않으면 콤보가 초기화돼!</div>
+</div>
+
+<script>
+    let combo = 0;
+    let score = 0;
+    let best = Number(localStorage.getItem("catBest")) || 0;
+    let timer;
+
+    const cat = document.getElementById("cat");
+    const comboText = document.getElementById("combo");
+    const scoreText = document.getElementById("score");
+    const bestText = document.getElementById("best");
+    const message = document.getElementById("message");
+
+    bestText.textContent = best;
+
+    function clickCat() {
+        combo++;
+        score += combo;
+
+        comboText.textContent = combo;
+        scoreText.textContent = score;
+
+        if (combo > best) {
+            best = combo;
+            localStorage.setItem("catBest", best);
+            bestText.textContent = best;
+        }
+
+        if (combo >= 30) {
+            message.textContent = "🚀 전설의 고양이 집사!";
+        } else if (combo >= 20) {
+            message.textContent = "🔥 미쳤다! 초고속 클릭!";
+        } else if (combo >= 10) {
+            message.textContent = "💖 대단해! 콤보 폭발!";
+        } else if (combo >= 5) {
+            message.textContent = "✨ 좋아! 계속 클릭해!";
+        } else {
+            message.textContent = "😻 냥냥! 더 눌러 봐!";
+        }
+
+        cat.classList.remove("shake");
+        void cat.offsetWidth;
+        cat.classList.add("shake");
+
+        cat.textContent = combo >= 20 ? "😹" :
+                          combo >= 10 ? "😻" : "🐱";
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            combo = 0;
+            comboText.textContent = 0;
+            cat.textContent = "🐱";
+            message.textContent = "콤보가 초기화됐어! 다시 도전!";
+        }, 3000);
+    }
+
+    cat.addEventListener("click", clickCat);
+
+    cat.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            clickCat();
+        }
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+        combo = 0;
+        score = 0;
+        clearTimeout(timer);
+
+        comboText.textContent = 0;
+        scoreText.textContent = 0;
+        cat.textContent = "🐱";
+        message.textContent = "새로운 도전 시작!";
+    });
+</script>
+</body>
+</html>
